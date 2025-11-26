@@ -20,7 +20,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                withMaven(maven: 'maven3') {
+                withMaven(maven: 'Maven3') {
                     sh 'mvn -B clean package'
                 }
             }
@@ -28,7 +28,7 @@ pipeline {
         
         stage('Run Tests') {
             steps {
-                withMaven(maven: 'maven3') {
+                withMaven(maven: 'Maven3') {
                     sh 'mvn -B test'
                 }
             }
