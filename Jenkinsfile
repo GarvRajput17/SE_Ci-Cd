@@ -20,13 +20,17 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn -B clean package'
+                withMaven(maven: 'maven3') {
+                    sh 'mvn -B clean package'
+                }
             }
         }
-
+        
         stage('Run Tests') {
             steps {
-                sh 'mvn -B test'
+                withMaven(maven: 'maven3') {
+                    sh 'mvn -B test'
+                }
             }
         }
 
