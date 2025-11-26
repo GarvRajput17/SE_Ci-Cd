@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Docker Hub credentials configured in Jenkins (Username/Password)
-        DOCKER_CRED = credentials('garvrajput17')
+        DOCKER_CRED = credentials('dockerhub-creds')
 
         // Image name and tag similar to the demo Jenkinsfile
         IMAGE = "${DOCKER_CRED_USR}/ci-cd-todo:latest"
