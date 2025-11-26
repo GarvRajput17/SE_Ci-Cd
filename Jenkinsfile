@@ -2,15 +2,18 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CRED = credentials('garvrajput17')      // your Docker Hub credential ID
-        IMAGE_NAME  = "${DOCKER_CRED_USR}/todo-cli"
-        IMAGE_TAG   = "latest"
+        // Docker Hub credentials configured in Jenkins (Username/Password)
+        DOCKER_CRED = credentials('garvrajput17')
+
+        // Image name and tag similar to the demo Jenkinsfile
+        IMAGE = "${DOCKER_CRED_USR}/ci-cd-todo:latest"
     }
 
     stages {
 
         stage('Checkout') {
             steps {
+                // Use the same repo/branch this Jenkinsfile comes from
                 checkout scm
             }
         }
@@ -21,38 +24,37 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        stage('Run Tests') {
             steps {
                 sh 'mvn -B test'
             }
         }
 
-        stage('Docker Build') {
-            when {
-                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
-            }
+        stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-                sh "docker images | grep ${IMAGE_NAME}"
+                sh "docker build -t ${IMAGE} ."
+                sh "docker images | grep ${IMAGE}"
             }
         }
 
-        stage('Docker Push') {
-            when {
-                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
-            }
+        stage('Push Docker Image') {
             steps {
                 sh """
                     echo "${DOCKER_CRED_PSW}" | docker login -u "${DOCKER_CRED_USR}" --password-stdin
-                    docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                    docker push ${IMAGE}
                 """
             }
         }
-    }
 
-    post {
-        always {
-            sh 'docker logout || true'
+        stage('Deploy Container') {
+            steps {
+                sh """
+                    docker pull ${IMAGE}
+                    docker stop ci-cd-todo || true
+                    docker rm ci-cd-todo || true
+                    docker run -d -p 8080:8080 --name ci-cd-todo ${IMAGE}
+                """
+            }
         }
     }
 }
